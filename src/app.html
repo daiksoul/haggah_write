@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.svg" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Haggah Write</title>
+		%sveltekit.head%
+
+		<style>
+			@font-face {
+				font-family: 'NoonnuBasicGothicRegular';
+				src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noon-2410@1.0/NoonnuBasicGothicRegular.woff2') format('woff2');
+				font-weight: normal;
+				font-style: normal;
+			}
+			
+
+			@font-face {
+				font-family: 'Pretendard-Regular';
+				src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
+				font-weight: 400;
+				font-style: normal;
+			}
+
+      @font-face {
+          font-family: 'PyeojinGothic';
+          src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2504-1@1.0/PyeojinGothic-Light.woff2') format('woff2');
+          font-weight: 300;
+          font-display: swap;
+      }
+
+      @font-face {
+          font-family: 'PyeojinGothic';
+          src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2504-1@1.0/PyeojinGothic-Regular.woff2') format('woff2');
+          font-weight: 400;
+          font-display: swap;
+      }
+
+      @font-face {
+          font-family: 'PyeojinGothic';
+          src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2504-1@1.0/PyeojinGothic-Bold.woff2') format('woff2');
+          font-weight: 700;
+          font-display: swap;
+      }
+
+			* {
+				font-family: 'PyeojinGothic';
+			}
+
+			body {
+				background-color: var(--black-2);
+				margin: 0;
+			}
+
+			*::-webkit-scrollbar {
+				background-color: transparent;
+			}
+
+			*::-webkit-scrollbar:vertical {
+				width: 5px;
+			}
+
+			*::-webkit-scrollbar:horizontal {
+				height: 5px;
+			}
+
+			*::-webkit-scrollbar {
+				background-color: transparent;
+			}
+			
+			*::-webkit-scrollbar:hover {
+				background-color: #fff2 ;
+			}
+
+			*::-webkit-scrollbar-button {
+				background-color: transparent;
+				width: 0;
+				height: 0;
+			}
+
+			*::-webkit-scrollbar-thumb {
+				background-color: transparent;
+				border: 1px solid transparent;
+				border-radius: 1em;
+			}
+			
+			*::-webkit-scrollbar-thumb:hover {
+				border-radius: 5px;
+				border: 5px solid transparent;
+			}
+
+			*:hover::-webkit-scrollbar-thumb {
+				background-color: #fff4;
+			}
+
+			hr {
+				color: white
+			}
+
+			.align-mid {
+				position: relative;
+				left: 50%;
+				transform: translate(-50%,0);
+			}
+
+			*.overlay {
+				background-color: #0008;
+				inset: 0;
+				position: fixed;
+			}
+
+			*.text-input {
+				display: block;
+				background-color: var(--black-2);
+				color: var(--white-1);
+				border: 1px solid var(--black-3);
+				font-size: 1.2em;
+				border-radius: 5px;
+				padding: 12px;
+
+				width: calc(100% - 24px);
+				margin: 0 0 10px 0;
+			}
+
+			*.button-input {
+				font-size: 1.2em;
+				background-color: var(--black-3);
+				border: none;
+				color: var(--white-1);
+				border-radius: 5px;
+				padding: 12px;
+				width: 100%;
+			}
+
+			:root {
+				--black-1: #000f;
+				--black-2: #222f;
+				--black-3: #333f;
+				--black-4: #444f;
+				--white-1: #ffff;
+				--white-2: #dddf;
+				--white-3: #cccf;
+				--white-4: #bbbf;
+        --red-1: #F00;
+        --green-1: #0F0;
+			}
+
+		</style>
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>
