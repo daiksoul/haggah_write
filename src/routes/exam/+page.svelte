@@ -453,7 +453,7 @@
       type="text"
       bind:value={address_text}
       tabindex="0"
-      disabled={completed}
+      disabled={completed || (selectedSND != null && selectedSND.eval == 1)}
     />
   {/if}
   <hr style="width: 30%;" />
