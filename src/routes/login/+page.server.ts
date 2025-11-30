@@ -3,6 +3,15 @@ import * as auth from '$lib/server/auth.ts';
 import { supabase } from '$lib/supabaseclient.js';
 import { fail, redirect } from '@sveltejs/kit';
 
+export async function load({ }) {
+  const { data, error } = await supabase.auth.getUser();
+
+  if (!error) {
+    redirect(301, '/my');
+  }
+
+}
+
 export const actions = {
   signin: async ({ request }) => {
     const data = await request.formData();
