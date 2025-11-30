@@ -468,7 +468,7 @@
     use:focus
     bind:this={textArea}
     tabindex="0"
-    disabled={completed}
+    disabled={completed || (selectedSND != null && selectedSND.eval == 1)}
   >
   </textarea>
   <br />
