@@ -1,10 +1,7 @@
 <script lang="ts">
-  import { enhance } from "$app/forms";
   import { goto } from "$app/navigation";
   import CircularLoadingIndicator from "$lib/component/circular_loading_indicator.svelte";
-  import Switch from "$lib/component/switch.svelte";
   import { multiverseShortName } from "$lib/util";
-  import { redirect } from "@sveltejs/kit";
 
   let { data } = $props();
 
@@ -41,7 +38,7 @@
           goto("/bible");
         }}>성경</button
       >
-      {#if data.isAuth}
+      {#if data.session != null}
         <button
           onclick={(_) => {
             goto("/my");

@@ -1,11 +1,8 @@
-import * as db from '$lib/server/database.ts';
-import { supabase } from '$lib/supabaseclient.js';
 import { verseCompare } from '$lib/util.js';
 import { fail, json } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types.js';
-import { getCurrentUser } from '$lib/auth_state.svelte.ts'
 
-export const load: PageServerLoad = async ({ url }) => {
+export const load: PageServerLoad = async ({ url, locals: { supabase, user } }) => {
   const book = parseInt((url.searchParams.get('book') as string | null) ?? '0');
   const chapter = parseInt((url.searchParams.get('chapter') as string | null) ?? '1');
 
@@ -28,7 +25,7 @@ export const load: PageServerLoad = async ({ url }) => {
       }
     });
 
-  var uid = getCurrentUser()?.id;
+  var uid = user?.id;
 
   const collectionPromise = supabase.from('collection')
     .select<'collection', Collection>().then(({ data, error }) => {
@@ -56,10 +53,9 @@ export const load: PageServerLoad = async ({ url }) => {
 }
 
 export const actions = {
-  save: async ({ request }) => {
+  save: async ({ request, locals: { supabase, user } }) => {
 
     const data = await request.formData();
-    const userData = getCurrentUser();
 
     const collection_id = parseInt(data.get('collection_id') as string);
 
@@ -76,7 +72,7 @@ export const actions = {
         chapter,
         verses,
         collection_id,
-        owner_uid: userData?.id
+        owner_uid: user?.id
       });
 
     if (saveError) {
@@ -88,7 +84,7 @@ export const actions = {
       });
     }
 
-    console.log('success!');
+    //console.log('success!');
 
     return {
       status: 'success'

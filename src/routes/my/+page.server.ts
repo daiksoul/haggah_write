@@ -1,37 +1,32 @@
 import { supabase } from '$lib/supabaseclient.js';
 import { redirect } from '@sveltejs/kit';
 
-export async function load({}) {
-  const {data, error} = await supabase.auth.getUser();
+export async function load({ locals: { supabase, user } }) {
+  if (user === null) {
+    redirect(301, '/login');
+  }
 
-  if (error) {
-    
+  const { data: userData, error: userError } = await supabase
+    .from('users')
+    .select<"users", User>()
+    .single();
 
-    console.log(error.message);
-    // return {}
-    redirect(308, '/login');
-  } else {
-    const {data: userData, error: userError} = await supabase
-      .from('users')
-      .select<"users",User>();
+  if (userError) {
+    console.log(userError.message);
+    return { error: userError.message }
+  }
 
-    if (userError) {
-      console.log(userError.message);
-      return {}
-    }
+  //console.log(`${userData.name} logged in`);
 
-    console.log(`${userData[0].name} logged in`);
-
-    return {
-      user: userData[0]
-    }
+  return {
+    user: userData
   }
 }
 
 export const actions = {
-  logout: async ({request}) => {
+  logout: async ({ locals: { supabase } }) => {
     await supabase.auth.signOut();
 
-    redirect(308,'/');
+    redirect(308, '/');
   }
 }

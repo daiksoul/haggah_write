@@ -1,15 +1,13 @@
-import { getCurrentUser } from '$lib/auth_state.svelte';
-import { supabase } from '$lib/supabaseclient.js';
 import { error, json } from '@sveltejs/kit';
 
-export async function POST({ request }) {
+export async function POST({ request, locals: { supabase, user } }) {
   let _json = await request.json();
 
   if (_json.draft.id == -1) {
     let { id, owner_uid, ...tmp } = _json.draft;
 
     let { data, error: insertError } = await supabase.from("submitNdraft")
-      .insert({ ...tmp, owner_uid: getCurrentUser()?.id })
+      .insert({ ...tmp, owner_uid: user?.id })
       .select();
 
     if (insertError) {

@@ -1,17 +1,15 @@
-import { getCurrentUser } from "$lib/auth_state.svelte.js";
 import { fullNames, shortNames } from "$lib/data.js";
 import { getExamData, setExamData } from "$lib/exam_state.svelte.js";
 import type { ExamData } from "$lib/model/exam_data.js";
 import { evaluation } from "$lib/model/submission.js";
 import { rawGrade } from "$lib/server/grading.js";
-import { supabase } from "$lib/supabaseclient";
 import { error, json } from "@sveltejs/kit";
 import type { ChangeObject } from "diff";
 // error code 
 // 460 : simple error
 // 461 : force complete test
 // 462 : crash test
-export async function POST({ request }) {
+export async function POST({ request, locals: { supabase, user } }) {
   let examData: ExamData | null = getExamData();
   if (examData == null) return error(462, { message: '시험정보가 존재하지 않습니다' });
   if (examData.completedAt != null) return error(462, { message: '시험이 종료되었습니다' });
@@ -109,7 +107,7 @@ export async function POST({ request }) {
       multiverse_id: mid,
       eval: evalu,
       submit_count: submit_count + skipSubmission ? 0 : 1,
-      owner_uid: getCurrentUser()?.id,
+      owner_uid: user?.id,
       res: diffs,
       ...tmp,
     })
