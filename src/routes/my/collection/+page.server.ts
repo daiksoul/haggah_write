@@ -1,20 +1,10 @@
-import { getCurrentUser } from '$lib/auth_state.svelte.js';
-import { showToast } from '$lib/component/toast_store.svelte.js';
-import { supabase } from '$lib/supabaseclient.js';
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 
-
-export async function load({}) {
-  const {error} = await supabase.auth.getUser();
-  if (error) {
-    showToast(error.message, "error", true);
-    redirect(308,'/login')
-  }
-
+export async function load({ locals: { supabase } }) {
   const collections = supabase.from('collection')
-    .select<'collection',Collection>()
+    .select<'collection', Collection>()
     .order('created_at')
-    .then(({data, error})=> {
+    .then(({ data, error }) => {
       return {
         data: data as Collection[],
         error: error
@@ -27,22 +17,22 @@ export async function load({}) {
 }
 
 export const actions = {
-  create: async ({ request }) => {
+  create: async ({ request, locals: { supabase, user } }) => {
     const data = await request.formData();
 
     let name = data.get('name') as string;
     let description = data.get('description') as string;
-    let ownerId = getCurrentUser()?.id;
-    
+    let ownerId = user?.id;
+
     const { error: createError, data: createData } = await supabase
       .from('collection')
-      .insert({ 
-        name: name, 
-        description: description, 
+      .insert({
+        name: name,
+        description: description,
         owner_uid: ownerId,
       });
-    
-    if ( createError ) {
+
+    if (createError) {
       console.log(createError.message);
       return fail(442, {
         status: 'error',
@@ -56,11 +46,18 @@ export const actions = {
     }
   },
 
-  delete: async ({request}) => {
-    
+  delete: async ({ request, locals: { supabase } }) => {
+    let data = await request.formData();
+
+    let delId = parseInt(data.get('id') as string);
+
     const { error: deleteError } = await supabase
       .from('collection')
       .delete()
-      .eq('id','')
+      .eq('id', delId);
+
+    if (deleteError) {
+      return fail(442, { message: deleteError.message });
+    }
   }
 }

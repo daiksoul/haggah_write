@@ -1,8 +1,7 @@
 import { getExamData, setExamData, setExamDataDb } from "$lib/exam_state.svelte"
-import { supabase } from "$lib/supabaseclient";
 import type { PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ }) => {
+export const load: PageServerLoad = async ({ locals: { supabase } }) => {
   let { data: eData, error: eError } = await supabase.from("examData")
     .select("*")
     .eq("id", getExamData()?.id);

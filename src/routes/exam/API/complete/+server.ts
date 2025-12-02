@@ -1,8 +1,7 @@
 import { completeExam, getExamData } from '$lib/exam_state.svelte';
-import { supabase } from '$lib/supabaseclient.js';
 import { json, error } from '@sveltejs/kit';
 
-export async function POST({ request }) {
+export async function POST({ request, locals: { supabase } }) {
   completeExam();
 
   let { error: completeError } = await supabase

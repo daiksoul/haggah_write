@@ -1,9 +1,8 @@
 import { getExamData } from '$lib/exam_state.svelte';
 import type { ExamData } from '$lib/model/exam_data';
-import { supabase } from '$lib/supabaseclient.js';
 import { error, json } from '@sveltejs/kit';
 
-export async function POST({ request }) {
+export async function POST({ request, locals: { supabase } }) {
   let examData: ExamData | null = getExamData();
   if (examData == null) return json({});
   let _json = await request.json();

@@ -1,10 +1,9 @@
-import { supabase } from '$lib/supabaseclient.js';
 import { fail } from '@sveltejs/kit';
 import type { PageServerLoad } from '../$types.js';
 
-export const load: PageServerLoad = async ({params}) => {
+export const load: PageServerLoad = async ({ params, locals: { supabase } }) => {
   let collectionReturn = supabase.from('collection')
-    .select<'collection',Collection>()
+    .select<'collection', Collection>()
     .eq('id', parseInt(params.id))
     .single();
 
@@ -16,16 +15,16 @@ export const load: PageServerLoad = async ({params}) => {
     content: string
   }
 
-  let verseReturn = supabase.rpc('get_multiverse_content', {collection_id_input: parseInt(params.id)})
-  .then(({data: cData, error: cError })=> {
-    return {
-      data: (cData as MultiVerseWithContent[]),
-      error: cError
-    }
-  });
+  let verseReturn = supabase.rpc('get_multiverse_content', { collection_id_input: parseInt(params.id) })
+    .then(({ data: cData, error: cError }) => {
+      return {
+        data: (cData as MultiVerseWithContent[]),
+        error: cError
+      }
+    });
 
-  let dummyPromise = new Promise( resolve => setTimeout(() => resolve(), 0));
-  
+  let dummyPromise = new Promise<void>(resolve => setTimeout(() => resolve(), 0));
+
   return {
     collection: await collectionReturn,
     mulitverse: await verseReturn,
@@ -34,7 +33,7 @@ export const load: PageServerLoad = async ({params}) => {
 }
 
 export const actions = {
-  remove: async ({ request, params }) => {
+  remove: async ({ request, params, locals: { supabase } }) => {
     const data = await request.formData();
 
     let id = parseInt(data.get('id') as string);
@@ -42,7 +41,7 @@ export const actions = {
     const { error: deleteError } = await supabase
       .from('multiVerses')
       .delete()
-      .eq('id',id);
+      .eq('id', id);
 
     if (deleteError) {
       return fail(442, {
@@ -56,14 +55,14 @@ export const actions = {
     }
   },
 
-  editCollection: async ({ request, params }) => {
+  editCollection: async ({ request, params, locals: { supabase } }) => {
     const data = await request.formData();
 
     let newName = data.get('new_name') as string;
 
     let { error } = await supabase
       .from('collection')
-      .update({ name : newName })
+      .update({ name: newName })
       .eq('id', parseInt(params.id));
 
     if (error) {

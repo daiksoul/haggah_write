@@ -1,6 +1,4 @@
-import { getCurrentUser } from '$lib/auth_state.svelte.js';
-import { setExamData, setExamDataDb } from '$lib/exam_state.svelte.js';
-import { supabase } from '$lib/supabaseclient.js';
+import { setExamDataDb } from '$lib/exam_state.svelte.js';
 import { fail, redirect } from '@sveltejs/kit';
 
 export async function load({ url }) {
@@ -14,7 +12,7 @@ export async function load({ url }) {
 }
 
 export const actions = {
-  start: async ({ request }) => {
+  start: async ({ request, locals: { supabase, user } }) => {
     const data = await request.formData();
 
     const collectionId = parseInt(data.get('collection_id') as string);
@@ -47,7 +45,7 @@ export const actions = {
       max_submission_count: maxSubmissionCount,
       time_limit: timeLimit,
       answer_check: answerCheck,
-      owner_uid: getCurrentUser()?.id,
+      owner_uid: user?.id,
       chimrye: chimrye
     }
 

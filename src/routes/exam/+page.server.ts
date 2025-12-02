@@ -1,12 +1,10 @@
 import { getExamData, setExamData, setExamDataDb } from '$lib/exam_state.svelte.js';
 import * as gd from '$lib/server/grading.js';
-import { supabase } from '$lib/supabaseclient.js';
 import { fail } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types.js';
-import { getCurrentUser } from '$lib/auth_state.svelte.js';
 import type { SubmitNDraft } from '$lib/model/submit_n_draft.js';
 
-export const load: PageServerLoad = async ({ }) => {
+export const load: PageServerLoad = async ({ locals: { supabase } }) => {
   let examData = getExamData();
 
   let { data: timerData, error: timerError } = await supabase
@@ -74,7 +72,7 @@ export const load: PageServerLoad = async ({ }) => {
 }
 
 export const actions = {
-  submit: async ({ request }) => {
+  submit: async ({ request, locals: { supabase, user } }) => {
     const data = await request.formData();
 
     //consoleonsole.log(data);
@@ -95,7 +93,7 @@ export const actions = {
       const { error: submissionerror } = await supabase
         .from("submission")
         .insert({
-          owner_uid: getCurrentUser()?.id,
+          owner_uid: user?.id,
           exam_id: getExamData()?.id,
           multiverse_id: multiVerseId,
           submission: submitted,
@@ -122,7 +120,7 @@ export const actions = {
     }
   },
 
-  updateTimer: async ({ request }) => {
+  updateTimer: async ({ request, locals: { supabase } }) => {
     let data = await request.formData();
 
     let timeLeft = parseInt(data.get("timeLeft") as string);

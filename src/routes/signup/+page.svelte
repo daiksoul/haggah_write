@@ -3,7 +3,6 @@
   import Switch from "$lib/component/switch.svelte";
   import ToastList from "$lib/component/toast_list.svelte";
   import { showToast } from "$lib/component/toast_store.svelte.js";
-  import { error } from "@sveltejs/kit";
 
   let { form, data } = $props();
 
@@ -24,17 +23,6 @@
       showToast("비밀번호는 최소 6자리여야 합니다.", "error", true);
       return;
     }
-  }
-
-  async function signUp() {
-    const { data: signUpData, error: signUpError } =
-      await data.supabase.auth.signUp({
-        email: email ?? "",
-        password: password ?? "",
-        options: {
-          emailRedirectTo: "https://haggahwrite.dksl.dedyn.io/signup/success",
-        },
-      });
   }
 </script>
 
@@ -92,7 +80,7 @@
 
     <button
       onclick={(_) => {
-        signUp();
+        signupFormElement?.requestSubmit();
       }}
       class="button-input"
     >
