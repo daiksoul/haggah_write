@@ -5,7 +5,7 @@
 
   let { data } = $props();
 
-  let versePromise = data.verse;
+  let { user } = $derived(data);
 </script>
 
 <div class="mid">
@@ -38,7 +38,7 @@
           goto("/bible");
         }}>성경</button
       >
-      {#if data.session != null}
+      {#if user !== null}
         <button
           onclick={(_) => {
             goto("/my");

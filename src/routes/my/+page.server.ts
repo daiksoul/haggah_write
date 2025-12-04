@@ -1,10 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 
 export async function load({ locals: { supabase, user } }) {
-  if (user === null) {
-    redirect(301, '/login');
-  }
-
   const { data: userData, error: userError } = await supabase
     .from('users')
     .select<"users", User>()

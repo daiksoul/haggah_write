@@ -1,18 +1,16 @@
-import { getExamData, setExamData, setExamDataDb } from "$lib/exam_state.svelte"
+import { db2ExamData } from "$lib/model/exam_data";
 import type { PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ locals: { supabase } }) => {
+export const load: PageServerLoad = async ({ locals: { supabase, examData } }) => {
   let { data: eData, error: eError } = await supabase.from("examData")
     .select("*")
-    .eq("id", getExamData()?.id);
+    .eq("id", examData?.id);
 
   if (eError) {
     console.log(eError.message);
   }
 
-  setExamDataDb({ ...eData?.at(0) });
-
-  let examData = getExamData();
+  examData = db2ExamData({ ...eData?.at(0) });
 
   let submitNdraftPromise = supabase.rpc("get_exam_results", {
     eid_input: examData?.id

@@ -1,16 +1,17 @@
+import { getContext, setContext } from "svelte";
 import type { ExamData } from "./model/exam_data";
 
-let examData = $state(null as ExamData | null);
+//let examData = $state(null as ExamData | null);
 
 export function getExamData() {
-  return examData;
+  return getContext<ExamData | null>("examData");
 }
 
 export function setExamData(
   eData: ExamData) {
-  examData = {
-    ...eData,
-  }
+  setContext("examData", () => {
+    return eData
+  });
 }
 
 export function setExamDataDb({ id, collection_id, use_timer, show_address, show_answer, max_submission_count, time_limit, answer_check, chimrye, completed_at, time_left }
@@ -27,26 +28,33 @@ export function setExamDataDb({ id, collection_id, use_timer, show_address, show
     completed_at: Date | null,
     time_left: number | null,
   }) {
-  examData = {
-    id: id,
-    collectionId: collection_id,
-    useTimer: use_timer,
-    showAddress: show_address,
-    showAnswer: show_answer,
-    maxSubmissionCount: max_submission_count,
-    timeLimit: time_limit,
-    answerCheck: answer_check,
-    chimrye: chimrye,
-    completedAt: completed_at,
-    timeLeft: time_left,
-  }
+
+  setContext("examData", () => {
+    return {
+      id: id,
+      collectionId: collection_id,
+      useTimer: use_timer,
+      showAddress: show_address,
+      showAnswer: show_answer,
+      maxSubmissionCount: max_submission_count,
+      timeLimit: time_limit,
+      answerCheck: answer_check,
+      chimrye: chimrye,
+      completedAt: completed_at,
+      timeLeft: time_left,
+    };
+
+  });
+
 }
 
 export function completeExam() {
+  let examData: ExamData | null = getContext("examData");
   if (examData == null) return;
   examData.completedAt = new Date(Date.now());
+  setContext("examData", () => examData);
 }
 
 export function clearExamData() {
-  examData = null;
+  setContext("examData", () => null);
 }

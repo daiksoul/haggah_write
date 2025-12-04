@@ -76,7 +76,6 @@
   });
 
   let submitted = $state(false);
-  let submitForm: HTMLFormElement | null = $state(null);
 
   /// selected mulitverse
   let selectedMultiverse = $derived<MultiVerse | null>(
@@ -412,28 +411,6 @@
   }}
 >
   <input type="hidden" name="timeLeft" bind:value={timeLeft} />
-</form>
-
-<form
-  id="sumbit-form"
-  method="POST"
-  action="?/submit"
-  bind:this={submitForm}
-  use:enhance={(d) => {
-    return async ({ update }) => {
-      await update({ reset: false });
-    };
-  }}
->
-  <!-- <input type="hidden" name="multiverse_id" value={selectedId} /> -->
-  <input type="hidden" name="book" value={selectedMultiverse?.book} />
-  <input type="hidden" name="chapter" value={selectedMultiverse?.chapter} />
-  <input
-    type="hidden"
-    name="verses"
-    value={selectedMultiverse?.verses?.join(",")}
-  />
-  <input type="hidden" name="content" bind:value={text} />
 </form>
 
 <div class="contain-everything">

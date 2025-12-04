@@ -2,7 +2,6 @@
   import CircularLoadingIndicator from "$lib/component/circular_loading_indicator.svelte";
   import DiffList from "$lib/component/diff_list.svelte";
   import { multiverseShortName } from "$lib/util.js";
-  import type { ChangeObject } from "diff";
 
   let { data } = $props();
 </script>
@@ -100,28 +99,6 @@
 
   .unevaluated .snd-address {
     color: #888;
-  }
-
-  .snd-res {
-    word-break: keep-all;
-    word-wrap: normal;
-  }
-
-  .snd-res-token {
-    color: var(--white-1);
-  }
-
-  .snd-res-token.incorrect {
-    background-color: #ff000022;
-    border-radius: 2px;
-    padding: 2px;
-    color: #fff4;
-  }
-
-  .snd-res-token.missing {
-    background-color: #00ff0022;
-    border-radius: 2px;
-    padding: 2px;
   }
 
   h1,

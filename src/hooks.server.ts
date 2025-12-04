@@ -1,4 +1,5 @@
 import { PUBLIC_SUPABASE_PUBLISHABLE_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
+import { db2ExamData, type ExamData } from "$lib/model/exam_data";
 import { createServerClient } from "@supabase/ssr";
 import type { Handle } from '@sveltejs/kit';
 
@@ -35,6 +36,35 @@ export const handle: Handle = async ({ event, resolve }) => {
 
     return { session, user };
   }
+
+  event.locals.getExamData = async () => {
+    const { error } = await event.locals.supabase.auth.getUser();
+
+    if (error) {
+      return { examData: null };
+    }
+
+    const { data, error: queryError } = await event.locals.supabase
+      .from("examData")
+      .select("*")
+      .eq("completed_at", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (queryError) {
+      return { examData: null };
+    }
+
+    return {
+      examData: db2ExamData({ ...data }),
+    }
+  }
+
+  const { session, user } = await event.locals.safeGetSession();
+
+  event.locals.session = session;
+  event.locals.user = user;
 
   return resolve(event, {
     filterSerializedResponseHeaders(name) {

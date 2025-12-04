@@ -1,9 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 
-export async function load({ locals: { supabase } }) {
-  const { error } = await supabase.auth.getUser();
-
-  if (!error) {
+export async function load({ locals: { supabase, user } }) {
+  if (user != null) {
     redirect(301, '/my');
   }
 }

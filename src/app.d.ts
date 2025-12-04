@@ -8,6 +8,7 @@ declare global {
       safeGetSession: () => Promise<{ session: Session | null; user: User | null }>;
       session: Session | null,
       user: User | null,
+      getExamData: () => Promise<{ examData: ExamData | null }>;
       examData: ExamData | null,
     };
 

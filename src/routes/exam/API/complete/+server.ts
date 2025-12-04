@@ -1,8 +1,10 @@
 import { completeExam, getExamData } from '$lib/exam_state.svelte';
 import { json, error } from '@sveltejs/kit';
 
-export async function POST({ request, locals: { supabase } }) {
-  completeExam();
+export async function POST({ request, locals: { supabase, examData } }) {
+  if (examData != null) {
+    examData.completedAt = new Date(Date.now());
+  }
 
   let { error: completeError } = await supabase
     .from("examData")
