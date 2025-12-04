@@ -1,4 +1,3 @@
-import { supabase } from '$lib/supabaseclient.js';
 import { fail, redirect } from '@sveltejs/kit';
 
 import * as auth from '$lib/server/auth.ts';

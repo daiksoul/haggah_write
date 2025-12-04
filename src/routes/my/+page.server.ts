@@ -1,4 +1,3 @@
-import { supabase } from '$lib/supabaseclient.js';
 import { redirect } from '@sveltejs/kit';
 
 export async function load({ locals: { supabase, user } }) {

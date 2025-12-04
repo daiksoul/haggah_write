@@ -1,10 +1,10 @@
 import { diffChars, type ChangeObject } from "diff";
-import { supabase } from "$lib/supabaseclient";
 import { evaluation } from "$lib/model/submission";
 import type { ExamData } from "$lib/model/exam_data";
+import { supabaseService } from "./supabaseService";
 
 export async function grade(addr: MultiVerse, submission: string, examData: ExamData | null): Promise<{ res: ChangeObject<string>[], status: evaluation }> {
-  const { data, error } = await supabase.from('bible')
+  const { data, error } = await supabaseService.from('bible')
     .select<'bible', Verse>()
     .eq('book', addr.book + 1)
     .eq('chapter', addr.chapter)

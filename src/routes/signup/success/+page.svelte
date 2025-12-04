@@ -1,18 +1,16 @@
 <script lang="ts">
-  import { supabase } from "$lib/supabaseclient";
-
-  supabase.auth.getSession().then(({data, error}) => {
-    if(!error){
-      console.log(data.session);
-    } else {
-      console.log(error.message);
-    }
-  });
+  let {
+    data: { supabase, session },
+  } = $props();
 </script>
+
+<h2>이메일 주소 인증</h2>
+<hr />
+<p>인증이 완료되었습니다</p>
 
 <style>
   * {
-    font-family: 'Pretendard-Regular';
+    font-family: "Pretendard-Regular";
   }
 
   * {
@@ -20,7 +18,7 @@
     color: var(--white-1);
 
     text-align: center;
-  }  
+  }
 
   a {
     color: var(--white-1);
@@ -39,7 +37,3 @@
   }
 </style>
 
-
-<h2>이메일 주소 인증</h2>
-<hr>
-<p> 인증이 완료되었습니다 </p>
