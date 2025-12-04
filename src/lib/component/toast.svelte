@@ -1,56 +1,60 @@
 <script lang="ts">
-  import { toastStore, type ToastModel } from "./toast_store.svelte";
+  import { toastList, type ToastModel } from "./toast_store.svelte";
   import Check from "./icon/check.svelte";
   import Warning from "./icon/warning.svelte";
   import Info from "./icon/info.svelte";
   import Cross from "./icon/cross.svelte";
-  import '$lib/util/array';
+  import "$lib/util/array";
 
   interface Prop {
-    toastModel: ToastModel
+    toastModel: ToastModel;
   }
 
   let { toastModel }: Prop = $props();
 
-  let color = $state('');
+  let color = $state("");
   let icon: Element | unknown = $state();
 
-  switch(toastModel.type) {
+  switch (toastModel.type) {
     case "success":
-      color = '#080';
+      color = "#080";
       break;
     case "error":
-      color = '#800';
+      color = "#800";
       break;
     case "info":
     default:
-      color = '#444';
+      color = "#444";
       break;
   }
-
 </script>
 
-<div class="container"
-  style="background-color: {color};"
->
+<div class="container" style="background-color: {color};">
   <div class="icon">
-    {#if toastModel.type === 'success'}
-      <Check color='white' width='1.2em' height='1.2em'/>
-    {:else if toastModel.type === 'error'}
-      <Warning color='white' width='1.2em' height='1.2em'/>
+    {#if toastModel.type === "success"}
+      <Check color="white" width="1.2em" height="1.2em" />
+    {:else if toastModel.type === "error"}
+      <Warning color="white" width="1.2em" height="1.2em" />
     {:else}
-      <Info color='white' width='1.2em' height='1.2em'/>
+      <Info color="white" width="1.2em" height="1.2em" />
     {/if}
   </div>
   <div class="message">
     {toastModel.message}
   </div>
 
-  {#if toastModel.dismissible}  
-    <button class="close" onclick={(e) => {
-      toastStore.list.remove(toastModel);
-    }}>
-      <Cross color='white' width='24px' height='24px'/>
+  {#if toastModel.dismissible}
+    <button
+      class="close"
+      onclick={(e) => {
+        toastList.update((v) => {
+          let tmp = v;
+          tmp.list.remove(toastModel);
+          return tmp;
+        });
+      }}
+    >
+      <Cross color="white" width="24px" height="24px" />
     </button>
   {/if}
 </div>
@@ -93,3 +97,4 @@
     border: none;
   }
 </style>
+
