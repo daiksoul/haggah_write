@@ -26,4 +26,3 @@
     color: var(--white-1);
   }
 </style>
-
