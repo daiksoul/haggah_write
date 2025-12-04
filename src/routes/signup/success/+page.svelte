@@ -1,7 +1,5 @@
 <script lang="ts">
-  let {
-    data: { supabase, session },
-  } = $props();
+  let { data } = $props();
 </script>
 
 <h2>이메일 주소 인증</h2>
