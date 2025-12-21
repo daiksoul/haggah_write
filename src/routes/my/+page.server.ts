@@ -21,7 +21,6 @@ export async function load({ locals: { supabase, user } }) {
 export const actions = {
   logout: async ({ locals: { supabase } }) => {
     await supabase.auth.signOut();
-
-    redirect(308, '/');
+    redirect(301, '/');
   }
 }

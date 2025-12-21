@@ -9,8 +9,10 @@
 
   <p>계정 생성일 : {formatDate(new Date(data.user?.created_at ?? 0))}</p>
   <p>연결된 메일 : {data.user?.email}</p>
-  <p><a href="/logout">로그아웃</a></p>
   <p><a href="/my/collection">컬렉션</a></p>
+  <form action="?/logout" method="POST">
+    <input type="submit" class="button-input" value="로그아웃" />
+  </form>
 </div>
 
 <style>
@@ -24,5 +26,9 @@
 
   a {
     color: var(--white-1);
+  }
+
+  .button-input {
+    width: 100px;
   }
 </style>
