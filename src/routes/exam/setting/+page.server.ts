@@ -49,12 +49,22 @@ export const actions = {
       chimrye: chimrye
     }
 
-    let { data: examData, error: examError } = await supabase.from("examData").insert(eData).select();
+    let { data: examData, error: examError } = await supabase.from("examData").insert(eData).select().single();
+
+    let { error: userError } = await supabase.from("users")
+      .update({
+        active_exam_id: examData.id
+      })
+      .eq('uid', user?.id);
+
+    if (userError) {
+      return fail(442, {
+        status: 'error',
+        message: userError.message,
+      });
+    }
 
     if (!examError) {
-      setExamDataDb(
-        examData![0]
-      );
       redirect(308, '/exam');
     } else {
       return fail(442, {

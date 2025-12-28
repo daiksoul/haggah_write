@@ -102,7 +102,7 @@ export async function POST({ request, locals: { supabase, user, examData } }) {
     ? await supabase.from("submitNdraft").insert({
       multiverse_id: mid,
       eval: evalu,
-      submit_count: submit_count + skipSubmission ? 0 : 1,
+      submit_count: submit_count + (skipSubmission ? 0 : 1),
       owner_uid: user?.id,
       res: diffs,
       ...tmp,
@@ -112,7 +112,7 @@ export async function POST({ request, locals: { supabase, user, examData } }) {
       .update({
         multiverse_id: mid,
         eval: evalu,
-        submit_count: submit_count + skipSubmission ? 0 : 1,
+        submit_count: submit_count + (skipSubmission ? 0 : 1),
         res: diffs,
         ...tmp
       })

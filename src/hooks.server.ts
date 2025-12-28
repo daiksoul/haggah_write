@@ -44,15 +44,24 @@ export const handle: Handle = async ({ event, resolve }) => {
       return { examData: null };
     }
 
+    const { data: { active_exam_id }, error: userError } = await event.locals.supabase
+      .from("users")
+      .select('*')
+      .single();
+
+    if (userError) {
+      console.log(userError);
+      return { examData: null };
+    }
+
     const { data, error: queryError } = await event.locals.supabase
       .from("examData")
       .select("*")
-      .eq("completed_at", null)
-      .order("created_at", { ascending: false })
-      .limit(1)
+      .eq('id', active_exam_id)
       .single();
 
     if (queryError) {
+      console.log(queryError.message);
       return { examData: null };
     }
 
@@ -65,6 +74,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   event.locals.session = session;
   event.locals.user = user;
+
+  const { examData } = await event.locals.getExamData();
+
+  event.locals.examData = examData;
 
   return resolve(event, {
     filterSerializedResponseHeaders(name) {

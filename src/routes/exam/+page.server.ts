@@ -1,8 +1,10 @@
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types.js';
 import type { SubmitNDraft } from '$lib/model/submit_n_draft.js';
 
 export const load: PageServerLoad = async ({ locals: { supabase, examData } }) => {
+  if (examData == null) redirect(301, "/");
+
   let { data: timerData, error: timerError } = await supabase
     .from("examData")
     .select("time_left")

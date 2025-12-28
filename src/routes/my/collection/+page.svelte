@@ -5,6 +5,7 @@
 
   import CircularLoadingIndicator from "$lib/component/circular_loading_indicator.svelte";
   import Add from "$lib/component/icon/add.svelte";
+  import ToastList from "$lib/component/toast_list.svelte";
   import { showToast } from "$lib/component/toast_store.svelte.js";
   import Collection from "./collection.svelte";
   import DeleteCollection from "./delete_collection.svelte";
@@ -143,6 +144,8 @@
 >
   <input type="hidden" name="id" bind:value={removeId} />
 </form>
+
+<ToastList />
 
 <style>
   .body {

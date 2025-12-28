@@ -14,6 +14,8 @@
   import Timer from "$lib/component/timer.svelte";
   import { goto } from "$app/navigation";
 
+  let examData = $derived(data.examData);
+
   let completed = $state(false);
 
   let address_text = $state("");
@@ -131,8 +133,8 @@
         created_at: now,
         updated_at: now,
         owner_uid: "",
-        exam_id: data.examData?.id ?? -1,
-        multiverse_id: data.examData?.showAddress ? selectedId : null,
+        exam_id: examData?.id ?? -1,
+        multiverse_id: examData?.showAddress ? selectedId : null,
         address: address_text,
         content: text,
         submit_count: 0,
@@ -142,7 +144,7 @@
       sNDList?.push(tmpSND);
       sNDTimerList.push(-1);
 
-      let tmpIdx = data.examData?.showAddress
+      let tmpIdx = examData?.showAddress
         ? (idList?.indexOf(selectedId) ?? -1)
         : sNDTimerList.length - 1;
 
@@ -159,7 +161,7 @@
       selectedSND!.content = text;
       selectedSND!.updated_at = new Date(Date.now());
 
-      let tmpIdx = data.examData?.showAddress
+      let tmpIdx = examData?.showAddress
         ? (idList?.indexOf(selectedId) ?? -1)
         : sNDIdList?.indexOf(selectedSNDId!);
 
@@ -185,11 +187,11 @@
 
   function debounceDraft(idx: number, draft: SubmitNDraft) {
     clearTimeout(
-      data.examData?.showAddress ? dataTimerList[idx] : sNDTimerList[idx],
+      examData?.showAddress ? dataTimerList[idx] : sNDTimerList[idx],
     );
 
     let sndIdx = idx;
-    if (data.examData?.showAddress) {
+    if (examData?.showAddress) {
       sndIdx =
         sNDList.findIndex((v) => v.multiverse_id == dataList?.at(idx)?.id) ??
         -1;
@@ -217,14 +219,14 @@
         //loadInputs();
       }
 
-      if (data.examData?.showAddress) {
+      if (examData?.showAddress) {
         dataTimerList[idx] = -1;
       } else {
         sNDTimerList[idx] = -1;
       }
     }, 500);
 
-    if (data.examData?.showAddress) {
+    if (examData?.showAddress) {
       dataTimerList[idx] = tmpId;
     } else {
       sNDTimerList[idx] = tmpId;
@@ -233,11 +235,11 @@
 
   function debounceSubmit(idx: number, submission: SubmitNDraft) {
     clearTimeout(
-      data.examData?.showAddress ? dataTimerList[idx] : sNDTimerList[idx],
+      examData?.showAddress ? dataTimerList[idx] : sNDTimerList[idx],
     );
 
     let sndIdx = idx;
-    if (data.examData?.showAddress) {
+    if (examData?.showAddress) {
       sndIdx =
         sNDList.findIndex((v) => v.multiverse_id == dataList?.at(idx)?.id) ??
         -1;
@@ -261,7 +263,7 @@
 
       if (response.status > 399) {
         showToast(message, "error", true);
-        if (data.examData?.showAddress) {
+        if (examData?.showAddress) {
           dataTimerList[idx] = -1;
         } else {
           sNDTimerList[idx] = -1;
@@ -280,7 +282,7 @@
         return;
       }
 
-      if (data.examData?.showAnswer) {
+      if (examData?.showAnswer) {
         diffs.clear();
         diffs.push(...resDiff);
       }
@@ -293,6 +295,9 @@
           //sNDList[sndIdx].id = resultData.id;
           selectedSNDId = resultData.id;
         }
+
+        console.log(resultData.submit_count);
+
         sNDList[sndIdx].created_at = resultData.created_at;
         sNDList[sndIdx].updated_at = resultData.updated_at;
         sNDList[sndIdx].multiverse_id = resultData.multiverse_id;
@@ -306,14 +311,14 @@
         completed = true;
       }
 
-      if (data.examData?.showAddress) {
+      if (examData?.showAddress) {
         dataTimerList[idx] = -1;
       } else {
         sNDTimerList[idx] = -1;
       }
     }, 500);
 
-    if (data.examData?.showAddress) {
+    if (examData?.showAddress) {
       dataTimerList[idx] = tmpId;
     } else {
       sNDTimerList[idx] = tmpId;
@@ -322,10 +327,10 @@
 
   function debounceDelete(idx: number, submission: SubmitNDraft) {
     clearTimeout(
-      data.examData?.showAddress ? dataTimerList[idx] : sNDTimerList[idx],
+      examData?.showAddress ? dataTimerList[idx] : sNDTimerList[idx],
     );
     let sndIdx = idx;
-    if (data.examData?.showAddress) {
+    if (examData?.showAddress) {
       sndIdx =
         sNDList.findIndex((v) => v.multiverse_id == dataList?.at(idx)?.id) ??
         -1;
@@ -359,7 +364,7 @@
       sNDTimerList.removeAt(idx);
     }, 500);
 
-    if (data.examData?.showAddress) {
+    if (examData?.showAddress) {
       dataTimerList[idx] = tmpId;
     } else {
       sNDTimerList[idx] = tmpId;
@@ -367,20 +372,17 @@
   }
 
   onMount(() => {
-    completed = data.examData?.completedAt != null;
+    completed = examData == null || examData?.completedAt != null;
     console.log(completed);
 
-    if (data.examData?.useTimer) {
-      timeLeft = data.examData?.timeLeft ?? data.examData?.timeLimit ?? 600;
+    if (examData?.useTimer) {
+      timeLeft = examData?.timeLeft ?? examData?.timeLimit ?? 600;
 
       window.setInterval(() => {
         timeLeft--;
 
         if (timeLeft == -1) {
           completed = true;
-          fetch("/exam/API/complete", {
-            method: "POST",
-          });
         }
       }, 1000);
     }
@@ -394,7 +396,10 @@
 
   $effect(() => {
     if (completed == true) {
-      setTimeout(() => goto("/exam/result"), 2500);
+      fetch("/exam/API/complete", {
+        method: "POST",
+      });
+      setTimeout(() => goto(`/exam/result/${examData?.id}`), 2500);
     }
   });
 </script>
@@ -415,9 +420,9 @@
 
 <div class="contain-everything">
   <div class="submit-counter align-mid">
-    [ {selectedSND?.submit_count ?? 0} / {data.examData?.maxSubmissionCount} ]
+    [ {selectedSND?.submit_count ?? 0} / {examData?.maxSubmissionCount} ]
   </div>
-  {#if data.examData?.showAddress}
+  {#if examData?.showAddress}
     <div class="address-container align-mid" style="width: 30%;">
       {selectedMultiverse != null
         ? multiverseShortName(selectedMultiverse)
@@ -453,7 +458,7 @@
   <div class="underbar-container align-mid">
     <button
       onclick={() => {
-        if (data.examData?.showAddress) {
+        if (examData?.showAddress) {
           if (idList == null) return;
 
           const tmpIdx = idList.indexOf(selectedId);
@@ -486,9 +491,9 @@
           loadInputs();
         }
       }}
-      disabled={(data.examData?.showAddress &&
+      disabled={(examData?.showAddress &&
         (idList == null || idList.indexOf(selectedId) <= 0)) ||
-        (!data.examData?.showAddress &&
+        (!examData?.showAddress &&
           (sNDIdList == null ||
             (selectedSNDId != null && sNDIdList.indexOf(selectedSNDId) <= 0)))}
       tabindex="0"
@@ -497,7 +502,7 @@
     </button>
     <button
       onclick={(_) => {
-        console.log(`${res.length}`);
+        //console.log(`${res.length}`);
         saveDraft(true);
       }}
       tabindex="0"
@@ -507,7 +512,7 @@
     </button>
     <button
       onclick={() => {
-        if (data.examData?.showAddress) {
+        if (examData?.showAddress) {
           if (idList == null) return;
           const tmpIdx = idList.indexOf(selectedId);
           if (tmpIdx >= idList.length - 1) return;
@@ -539,9 +544,9 @@
           loadInputs();
         }
       }}
-      disabled={(data.examData?.showAddress &&
+      disabled={(examData?.showAddress &&
         (idList == null || idList.indexOf(selectedId) >= idList.length - 1)) ||
-        (!data.examData?.showAddress &&
+        (!examData?.showAddress &&
           (sNDIdList == null ||
             (selectedSNDId != null &&
               sNDIdList.indexOf(selectedSNDId) >= sNDIdList.length - 1)))}
@@ -554,7 +559,7 @@
   <div class="sizedbox" style="height: 25px;"></div>
 
   <!-- {#if true} -->
-  {#if data.examData?.showAnswer && (data.examData.answerCheck == 0 || data.examData?.answerCheck == 1)}
+  {#if examData?.showAnswer && (examData.answerCheck == 0 || examData?.answerCheck == 1)}
     <div class="output-container align-mid">
       {#if submitted && res.length == 0}
         <CircularLoadingIndicator />
@@ -569,7 +574,7 @@
 
 <div class="sidebar-hover">
   <div class="sidebar">
-    {#if data.examData?.showAddress}
+    {#if examData?.showAddress}
       {#await data.data then { data: verses, error }}
         {#each verses as mVerse, i}
           <button
@@ -664,7 +669,7 @@
   </div>
 </div>
 
-{#if data.examData?.useTimer}
+{#if examData?.useTimer}
   <div class="timer-container">
     <Timer bind:timeLeft />
   </div>
@@ -680,7 +685,7 @@
   on:beforeunload={(e: BeforeUnloadEvent) => {
     if (completed) {
     } else {
-      if (data.examData?.useTimer) {
+      if (examData?.useTimer) {
         updateTimerForm?.requestSubmit();
       }
       e.preventDefault();
