@@ -59,5 +59,10 @@ export const actions = {
     if (deleteError) {
       return fail(442, { message: deleteError.message });
     }
+
+    return {
+      status: 'success',
+      message: '삭제되었습니다'
+    }
   }
 }

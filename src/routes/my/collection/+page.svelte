@@ -7,6 +7,7 @@
   import Add from "$lib/component/icon/add.svelte";
   import { showToast } from "$lib/component/toast_store.svelte.js";
   import Collection from "./collection.svelte";
+  import DeleteCollection from "./delete_collection.svelte";
   import NewCollection from "./new_collection.svelte";
 
   // let lst = [
@@ -27,11 +28,14 @@
   // ];
 
   let showPopUp = $state(false);
+  let removePopUp = $state(false);
+  let removeId = $state(-1);
 
   let newName = $state<string>("");
   let newDescription = $state<string>("");
 
   let createForm: HTMLFormElement | null = $state(null);
+  let removeForm: HTMLFormElement | null = $state(null);
 </script>
 
 <div class="body">
@@ -43,7 +47,13 @@
     <div class="collection-container">
       {#if !e}
         {#each collections as collection}
-          <Collection data={collection}></Collection>
+          <Collection
+            data={collection}
+            recallFunction={() => {
+              removeId = collection.id;
+              removePopUp = true;
+            }}
+          ></Collection>
         {/each}
       {:else}
         오류가 발생했습니다 <br /> {e.message}
@@ -101,6 +111,39 @@
   <!-- <input type="hidden" name="description" bind:value={newDescription}> -->
 </form>
 
+<DeleteCollection
+  bind:showPopUp={removePopUp}
+  recallFunction={() => {
+    removePopUp = false;
+    removeForm?.requestSubmit();
+  }}
+/>
+
+<form
+  action="?/delete"
+  method="POST"
+  bind:this={removeForm}
+  use:enhance={() => {
+    return async ({ update }) => {
+      await update();
+
+      switch (form?.status) {
+        case "error":
+          showToast(form.message!, form.status, true);
+          break;
+        case "success":
+          showToast(form.message!, form.status, true);
+          showPopUp = false;
+          break;
+        default:
+          break;
+      }
+    };
+  }}
+>
+  <input type="hidden" name="id" bind:value={removeId} />
+</form>
+
 <style>
   .body {
     color: var(--white-1);
@@ -132,4 +175,3 @@
     border-radius: 100%;
   }
 </style>
-
