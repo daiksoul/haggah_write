@@ -36,9 +36,10 @@ export const load: PageServerLoad = async ({ url, locals: { supabase, user } }) 
             created_at: v.created_at,
             description: v.description,
             name: v.name,
-            owner_uid: v.owner_id
+            owner_id: v.owner_id
           }
-        })
+        }),
+        error: error
       }
     });
 

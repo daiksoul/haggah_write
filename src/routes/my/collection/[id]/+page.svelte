@@ -5,7 +5,6 @@
   import Edit from "$lib/component/icon/edit.svelte";
   import Remove from "$lib/component/icon/remove.svelte";
   import Save from "$lib/component/icon/save.svelte";
-  import ToastList from "$lib/component/toast_list.svelte";
   import { showToast } from "$lib/component/toast_store.svelte.js";
   import { receive, send } from "$lib/component/transition";
   import { multiverseShortName } from "$lib/util.js";
@@ -161,8 +160,6 @@
     };
   }}
 ></form>
-
-<ToastList />
 
 <style>
   .contain-all {

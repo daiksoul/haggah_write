@@ -13,7 +13,6 @@
   import { slide } from "svelte/transition";
   import "$lib/util.ts";
   import { enhance } from "$app/forms";
-  import ToastList from "$lib/component/toast_list.svelte";
   import CollectionPopup from "./collection_popup.svelte";
   import { showToast } from "$lib/component/toast_store.svelte.js";
   import CircularLoadingIndicator from "$lib/component/circular_loading_indicator.svelte";
@@ -289,8 +288,6 @@
     />
   {/if}
 {/await}
-
-<ToastList />
 
 <style>
   * {

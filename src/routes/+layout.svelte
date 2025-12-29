@@ -1,6 +1,7 @@
 <script lang="ts">
   import { invalidate } from "$app/navigation";
   import UpArrow from "$lib/component/icon/up_arrow.svelte";
+  import ToastList from "$lib/component/toast_list.svelte";
 
   let { children, data } = $props();
 
@@ -41,6 +42,8 @@
     <a href="/my">개인페이지</a>
   </div>
 </div>
+
+<ToastList />
 
 <style>
   button {

@@ -6,7 +6,6 @@
   import { multiverseShortName } from "$lib/util.js";
   import { evalToAttr, type SubmitNDraft } from "$lib/model/submit_n_draft.js";
   import { showToast } from "$lib/component/toast_store.svelte.js";
-  import ToastList from "$lib/component/toast_list.svelte";
   import CircularLoadingIndicator from "$lib/component/circular_loading_indicator.svelte";
   import { onDestroy, onMount } from "svelte";
   import Add from "$lib/component/icon/add.svelte";
@@ -678,8 +677,6 @@
 {#if completed}
   <div class="overlay">완료된 시험입니다</div>
 {/if}
-
-<ToastList />
 
 <svelte:window
   on:beforeunload={(e: BeforeUnloadEvent) => {

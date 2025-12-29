@@ -1,12 +1,9 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
-  import ToastList from "$lib/component/toast_list.svelte";
   import { showToast } from "$lib/component/toast_store.svelte.js";
 
   let email = $state<string>();
   let password = $state<string>();
-  let password2 = $state<string>();
-  let name = $state<string>();
 
   let signinFormElement = $state<HTMLFormElement>();
 
@@ -55,8 +52,6 @@
     </button>
   </form>
 </div>
-
-<ToastList />
 
 <style>
   * {

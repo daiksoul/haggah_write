@@ -1,7 +1,6 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
   import Switch from "$lib/component/switch.svelte";
-  import ToastList from "$lib/component/toast_list.svelte";
   import { showToast } from "$lib/component/toast_store.svelte.js";
 
   let { form, data } = $props();
@@ -90,8 +89,6 @@
 </div>
 
 <Switch bind:state={a} --button-size="20px !important" />
-
-<ToastList />
 
 <style>
   * {

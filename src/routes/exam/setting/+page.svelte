@@ -10,7 +10,6 @@
   import { slide } from "svelte/transition";
   import { enhance } from "$app/forms";
   import { showToast } from "$lib/component/toast_store.svelte";
-  import ToastList from "$lib/component/toast_list.svelte";
 
   let { data, form } = $props();
 
@@ -99,8 +98,6 @@
     >
   </div>
 </div>
-
-<ToastList />
 
 <form
   action="?/start"
