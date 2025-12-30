@@ -24,6 +24,8 @@
 
   let timeLeft = $state(100000000);
 
+  let tmpIdCounter = -1;
+
   let res = $derived(
     diffs.map((a) => {
       let isDontCare = a.value.match(/^[\s,.]+$/);
@@ -71,6 +73,8 @@
         };
       });
       dataTimerList = d.map((_) => -1);
+      submitted_arr.clear();
+      d.forEach((_) => submitted_arr.push(0));
       selectedId = dataList.at(0)?.id ?? -1;
       loadInputs();
     }
@@ -99,6 +103,12 @@
           : sNDList.filter((v: SubmitNDraft) => v.id === selectedSNDId)[0],
   );
 
+  /// submission state of snds
+  /// 0 -> not submitted
+  /// 1 -> in submission
+  /// 2 -> submitted
+  let submitted_arr = $state<number[]>([]);
+
   data.submitNdraft.then(({ data: d, error }) => {
     if (!error) {
       sNDList?.push(...(d ?? []));
@@ -108,6 +118,11 @@
       if (sNDIdList.length > 0) {
         selectedSNDId = sNDIdList[0];
         loadInputs();
+      }
+
+      if (!examData.showAddress) {
+        submitted_arr.clear();
+        d?.forEach((_) => submitted_arr.push(0));
       }
     }
   });
@@ -128,7 +143,7 @@
       let now = new Date(Date.now());
 
       let tmpSND = {
-        id: -1,
+        id: tmpIdCounter,
         created_at: now,
         updated_at: now,
         owner_uid: "",
@@ -142,6 +157,10 @@
       };
       sNDList?.push(tmpSND);
       sNDTimerList.push(-1);
+      submitted_arr.push(0);
+
+      selectedSNDId = tmpIdCounter;
+      tmpIdCounter--;
 
       let tmpIdx = examData?.showAddress
         ? (idList?.indexOf(selectedId) ?? -1)
@@ -153,6 +172,8 @@
         debounceDraft(tmpIdx, tmpSND);
       }
     } else {
+      console.log(selectedSND);
+
       if (selectedSND?.content == text && selectedSND?.address == address_text)
         return;
 
@@ -167,6 +188,7 @@
       if (submit) {
         debounceSubmit(tmpIdx!, selectedSND!);
       } else {
+        if (submitted_arr[tmpIdx!] == 1) return;
         debounceDraft(tmpIdx!, selectedSND!);
       }
     }
@@ -212,7 +234,7 @@
 
       const { id } = await response.json();
 
-      if (sNDList != null && sNDList[sndIdx].id == -1) {
+      if (sNDList != null && sNDList[sndIdx].id < 0) {
         sNDList[sndIdx].id = id;
         //selectedSNDId = id;
         //loadInputs();
@@ -233,6 +255,7 @@
   }
 
   function debounceSubmit(idx: number, submission: SubmitNDraft) {
+    submitted_arr[idx] = 1;
     clearTimeout(
       examData?.showAddress ? dataTimerList[idx] : sNDTimerList[idx],
     );
@@ -266,9 +289,7 @@
           dataTimerList[idx] = -1;
         } else {
           sNDTimerList[idx] = -1;
-          if (selectedSNDId == -1) sNDTimerList.removeAt(idx);
         }
-        if (selectedSNDId == -1) sNDList.removeAt(sndIdx);
 
         if (response.status == 461) {
           completed = true;
@@ -283,19 +304,23 @@
 
       if (examData?.showAnswer) {
         diffs.clear();
-        diffs.push(...resDiff);
+        diffs.push(...(resDiff ?? []));
       }
 
       if (sNDList != null) {
-        if (sNDList[sndIdx].id == -1) {
+        if (sNDList[sndIdx].id < 0) {
           sNDList[sndIdx].id = resultData.id;
         }
-        if (selectedSNDId == null) {
-          //sNDList[sndIdx].id = resultData.id;
+        if (selectedSNDId == null || selectedSNDId < 0) {
           selectedSNDId = resultData.id;
         }
 
-        console.log(resultData.submit_count);
+        // if (selectedSNDId == null) {
+        //   //sNDList[sndIdx].id = resultData.id;
+        //   selectedSNDId = resultData.id;
+        // }
+
+        console.log(resultData);
 
         sNDList[sndIdx].created_at = resultData.created_at;
         sNDList[sndIdx].updated_at = resultData.updated_at;
@@ -315,6 +340,8 @@
       } else {
         sNDTimerList[idx] = -1;
       }
+
+      submitted_arr[idx] = 2;
     }, 500);
 
     if (examData?.showAddress) {
@@ -325,6 +352,10 @@
   }
 
   function debounceDelete(idx: number, submission: SubmitNDraft) {
+    if (submitted_arr[idx] == 1) {
+      showToast("제출 중인 구절입니다", "error", true);
+      return;
+    }
     clearTimeout(
       examData?.showAddress ? dataTimerList[idx] : sNDTimerList[idx],
     );
@@ -579,6 +610,7 @@
           <button
             class={["address-button", selectedId == mVerse.id && "selected"]}
             onclick={() => {
+              //console.log(selectedSND);
               saveDraft();
               cleanInputs();
               selectedId = mVerse.id;

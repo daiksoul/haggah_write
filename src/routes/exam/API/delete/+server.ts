@@ -2,15 +2,13 @@ import { getExamData } from '$lib/exam_state.svelte';
 import type { ExamData } from '$lib/model/exam_data';
 import { error, json } from '@sveltejs/kit';
 
-export async function POST({ request, locals: { supabase } }) {
-  let examData: ExamData | null = getExamData();
+export async function POST({ request, locals: { supabase, examData } }) {
   if (examData == null) return json({});
   let _json = await request.json();
 
   let { data: draftQueryData, error: draftQueryError } = await supabase.from("submitNdraft")
     .select("id, eval")
-    .eq("id", _json.id)
-    .single();
+    .eq("id", _json.id);
 
   if (draftQueryError) {
     return error(442, {
@@ -18,7 +16,7 @@ export async function POST({ request, locals: { supabase } }) {
     });
   }
 
-  if (draftQueryData?.eval != 0) {
+  if (draftQueryData?.at(0)?.eval != 0) {
     return error(442, {
       message: '이미 제출된 항목은 삭제할 수 없습니다'
     });

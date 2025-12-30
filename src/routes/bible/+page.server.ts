@@ -1,5 +1,5 @@
 import { verseCompare } from '$lib/util.js';
-import { fail, json } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types.js';
 
 export const load: PageServerLoad = async ({ url, locals: { supabase, user } }) => {

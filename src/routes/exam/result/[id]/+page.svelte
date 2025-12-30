@@ -34,7 +34,7 @@
             {/if}
           </div>
           {#if snd.submitCount > 0}
-            <DiffList diffs={snd.res} />
+            <DiffList diffs={snd.res ?? []} />
           {:else}
             {snd.content}
           {/if}
