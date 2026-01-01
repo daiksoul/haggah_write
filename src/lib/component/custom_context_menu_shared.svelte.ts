@@ -1,5 +1,9 @@
+import { writable } from "svelte/store";
+
 interface targetObject {
   target: HTMLElement | null
 }
 
-export var contextState:targetObject = $state({target: null});
+export const contextMenuObject = writable<targetObject>({
+  target: null
+});

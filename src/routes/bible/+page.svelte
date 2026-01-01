@@ -176,14 +176,15 @@
 
 <CustomContextMenu>
   <CustomContextMenuChildren
-    action={(element: HTMLElement) => {
-      navigator.clipboard.writeText(element.textContent);
+    action={(element) => {
+      navigator.clipboard.writeText(element?.textContent ?? "");
     }}
   >
     <Copy color="white" width="1.2em" height="1.2em" /> 절 내용 복사하기
   </CustomContextMenuChildren>
   <CustomContextMenuChildren
-    action={(element: HTMLElement) => {
+    action={(element) => {
+      if (element == null) return;
       if (element.id.startsWith("verse")) {
         let t = parseInt(element.id.split("_")[1]);
         selected.push(t);
@@ -198,7 +199,7 @@
     {#if !error && verses != null}
       {#if selected.length < verses.length / 2}
         <CustomContextMenuChildren
-          action={(_: HTMLElement) => {
+          action={(_) => {
             selected.clear();
             verses.forEach((verse: { verse: number }) => {
               selected.push(verse.verse);
@@ -209,7 +210,7 @@
         </CustomContextMenuChildren>
       {:else}
         <CustomContextMenuChildren
-          action={(_: HTMLElement) => {
+          action={(_) => {
             selected.clear();
           }}
         >
@@ -221,7 +222,7 @@
   {/await}
   {#if checkState && data.uid != null}
     <CustomContextMenuChildren
-      action={(_: HTMLElement) => {
+      action={(_) => {
         showPopup = true;
       }}
     >

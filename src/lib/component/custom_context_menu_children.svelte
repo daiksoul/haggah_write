@@ -1,14 +1,25 @@
 <script lang="ts">
-  type ElementCallFunction = (target: HTMLElement) => {};
+  type ElementCallFunction = (target: HTMLElement | null) => void;
 
   interface Props {
-    children: any,
-    action: ElementCallFunction,
+    children: any;
+    action: ElementCallFunction;
   }
 
-  let { children, action } = $props();
-  import { contextState } from "./custom_context_menu_shared.svelte";
+  let { children, action }: Props = $props();
+  import { contextMenuObject } from "./custom_context_menu_shared.svelte";
+
+  let ctxObject = $state<HTMLElement | null>(null);
+  contextMenuObject.subscribe((e) => {
+    ctxObject = e.target;
+  });
 </script>
+
+<li>
+  <button class="custom-context-menu" onclick={() => action(ctxObject)}
+    >{@render children()}</button
+  >
+</li>
 
 <style>
   button {
@@ -27,23 +38,17 @@
 
   li {
     padding: 0;
-    margin: 0; 
+    margin: 0;
   }
 
   li button {
     padding: 5px 10px 5px 10px;
     vertical-align: middle;
-
   }
 
   li button :global(*) {
     vertical-align: middle;
     transform: translate(0, -1.5px);
   }
-
-
 </style>
 
-<li>
-  <button class="custom-context-menu"  onclick={() => action(contextState.target)}>{@render children()}</button>
-</li>
