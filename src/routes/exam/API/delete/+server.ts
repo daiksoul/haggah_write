@@ -1,5 +1,3 @@
-import { getExamData } from '$lib/exam_state.svelte';
-import type { ExamData } from '$lib/model/exam_data';
 import { error, json } from '@sveltejs/kit';
 
 export async function POST({ request, locals: { supabase, examData } }) {
