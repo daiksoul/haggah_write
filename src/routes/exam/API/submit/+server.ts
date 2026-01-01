@@ -25,6 +25,7 @@ export async function POST({ request, locals: { supabase, user, examData } }) {
     return error(460, { message: "잘못된 주소 형식입니다." });
   }
 
+  /// get multiverse text content from multiverse_id
   let { data: mVData, error: mVError } = examData.showAddress ? await supabase.rpc('get_multiverse_content_by_mid', {
     cid_input: examData.collectionId,
     mid_input: multiverse_id
@@ -77,7 +78,7 @@ export async function POST({ request, locals: { supabase, user, examData } }) {
     return error(460, { message: existsError.message });
   }
 
-  if (evalu == evaluation.INCORRECT && existsData + 1 >= examData.maxSubmissionCount) {
+  if (evalu == evaluation.INCORRECT && (existsData + 1 >= examData.maxSubmissionCount || submit_count + 1 >= examData.maxSubmissionCount)) {
 
     let now = new Date(Date.now());
 
