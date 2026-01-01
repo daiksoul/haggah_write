@@ -27,3 +27,10 @@ export function evalToAttr(value: SubmitNDraft | null): string {
       return "unevaluated"
   }
 }
+
+export enum evaluation {
+  UNEVALUATED = 0,
+  CORRECT = 1,
+  INCORRECT = 2,
+  ERROR = 3,
+}

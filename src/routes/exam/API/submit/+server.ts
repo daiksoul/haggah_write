@@ -1,5 +1,5 @@
 import { fullNames, shortNames } from "$lib/data.js";
-import { evaluation } from "$lib/model/submission.js";
+import { evaluation } from "$lib/model/submit_n_draft.js";
 import { rawGrade } from "$lib/server/grading.js";
 import { error, json } from "@sveltejs/kit";
 import type { ChangeObject } from "diff";

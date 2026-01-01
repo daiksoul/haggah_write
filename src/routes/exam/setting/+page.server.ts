@@ -1,4 +1,3 @@
-import { setExamDataDb } from '$lib/exam_state.svelte.js';
 import { fail, redirect } from '@sveltejs/kit';
 
 export async function load({ url }) {

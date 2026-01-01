@@ -1,5 +1,5 @@
 import { diffChars, type ChangeObject } from "diff";
-import { evaluation } from "$lib/model/submission";
+import { evaluation } from "$lib/model/submit_n_draft";
 import type { ExamData } from "$lib/model/exam_data";
 import { supabaseService } from "./supabaseService";
 

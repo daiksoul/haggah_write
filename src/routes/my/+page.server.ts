@@ -3,7 +3,7 @@ import { redirect } from '@sveltejs/kit';
 export async function load({ locals: { supabase, user } }) {
   const { data: userData, error: userError } = await supabase
     .from('users')
-    .select<"users", User>()
+    .select('*')
     .single();
 
   if (userError) {
