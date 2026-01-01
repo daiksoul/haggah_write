@@ -14,7 +14,8 @@ export async function load({ locals: { supabase, user } }) {
   //console.log(`${userData.name} logged in`);
 
   return {
-    user: userData
+    userData: userData,
+    user: user,
   }
 }
 

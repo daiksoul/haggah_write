@@ -37,7 +37,7 @@ export const actions = {
 
     const { error: logError } = await supabaseService
       .from('users')
-      .insert({ email, password1, uid: res.user?.id, name });
+      .insert({ uid: res.user?.id, name });
 
     if (!logError) {
       redirect(303, '/signup/confirm');
