@@ -10,5 +10,6 @@ interface MultiVerse {
   id: number,
   book: number,
   chapter: number,
-  verses: number[]
+  verses: number[],
+  orderNumber: number,
 }

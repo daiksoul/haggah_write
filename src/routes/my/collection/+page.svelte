@@ -33,6 +33,7 @@
 
   let newName = $state<string>("");
   let newDescription = $state<string>("");
+  let newFile = $state<FileList | null>(null);
 
   let createForm: HTMLFormElement | null = $state(null);
   let removeForm: HTMLFormElement | null = $state(null);
@@ -76,8 +77,8 @@
   bind:showPopUp
   bind:name={newName}
   bind:description={newDescription}
+  bind:files={newFile}
   recallFunction={() => {
-    console.log("is This working?");
     createForm?.requestSubmit();
   }}
 />
@@ -85,10 +86,12 @@
 <form
   action="?/create"
   method="POST"
+  enctype="multipart/form-data"
   bind:this={createForm}
   use:enhance={(e) => {
     e.formData.set("name", newName);
     e.formData.set("description", newDescription);
+    e.formData.set("file", newFile?.item(0) ?? "null");
 
     return async ({ update }) => {
       await update({ reset: false });
