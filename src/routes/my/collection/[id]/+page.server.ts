@@ -12,13 +12,23 @@ export const load: PageServerLoad = async ({ params, locals: { supabase } }) => 
     book: number,
     chapter: number,
     verses: number[],
-    content: string
+    orderNumber: number,
+    content: string,
   }
 
   let verseReturn = supabase.rpc('get_multiverse_content', { collection_id_input: parseInt(params.id) })
     .then(({ data: cData, error: cError }) => {
       return {
-        data: (cData as MultiVerseWithContent[]),
+        data: cData.map((e: any) => {
+          return {
+            id: e.id,
+            book: e.book,
+            chapter: e.chapter,
+            verses: e.verses,
+            orderNumber: e.order_number,
+            content: e.content
+          }
+        }),
         error: cError
       }
     });
