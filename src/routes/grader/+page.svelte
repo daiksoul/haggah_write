@@ -1,10 +1,33 @@
 <script lang="ts">
   import Cross from "$lib/component/icon/cross.svelte";
+  import readXlsxFile from "read-excel-file";
 
   let files: FileList | null = $state(null);
   let fileInput: HTMLFormElement | null = $state(null);
 
-  async function submit() {}
+  async function submit() {
+	if(files == null) return;
+
+  	let rows = await readXlsxFile(files.item(0));
+
+	for (let row of rows) {
+		let book = row.at(0)?.toString() ?? '';
+		let chapter = row.at(1)?.toString() ?? '';
+		let verses = row.at(2)?.toString() ?? '';
+	
+		fetch("grader/API", {
+			method: "POST",
+			body: JSON.Stringify(
+				{book , chapter , verses ,}
+			),
+			headers: {
+				"Content-Type": "application/json",
+			}
+		});
+
+
+	}
+  }
 
   function onFileSubmit() {}
 
@@ -38,7 +61,9 @@
     <button
       class="button-input submit"
       onclick={() => {
-        fileInput?.requestSubmit();
+        //fileInput?.requestSubmit();
+
+	submit();
       }}>제출</button
     >
   </form>
