@@ -1,31 +1,52 @@
 <script lang="ts">
   import Cross from "$lib/component/icon/cross.svelte";
   import readXlsxFile from "read-excel-file";
+  import { type ChangeObject } from "diff";
+  import DiffList from "$lib/component/diff_list.svelte";
+  import { stringToNumberArray } from '$lib/util.js';
 
   let files: FileList | null = $state(null);
   let fileInput: HTMLFormElement | null = $state(null);
 
+  let results: { idx: number, book: string, chapter: string, verses: string, diffs: ChangeObject[] , status: number }[] = $state([]);
+
   async function submit() {
 	if(files == null) return;
+	results = [];
 
   	let rows = await readXlsxFile(files.item(0));
 
-	for (let row of rows) {
+	for (let [idx, row] of rows.entries()) {
 		let book = row.at(0)?.toString() ?? '';
 		let chapter = row.at(1)?.toString() ?? '';
 		let verses = row.at(2)?.toString() ?? '';
+		let content = row.at(3)?.toString() ?? '';
 	
 		fetch("grader/API", {
 			method: "POST",
-			body: JSON.Stringify(
-				{book , chapter , verses ,}
+			body: JSON.stringify(
+				{book , chapter , verses , content}
 			),
 			headers: {
 				"Content-Type": "application/json",
 			}
+		}).then( async (response) => {
+			console.log(response);
+
+
+			let { data: diffs, stat: status } = await response.json();
+
+			results.push({
+				idx,
+				book,
+				chapter,
+				verses,
+				diffs,
+				status,
+			});
+
+			results.sort(( a, b ) => a.idx - b.idx)
 		});
-
-
 	}
   }
 
@@ -67,6 +88,21 @@
       }}>제출</button
     >
   </form>
+
+  <div class="res-container">
+  {#if results.length > 0}
+  <div class="res-counter">
+  	{results.length} 묶음 중 {results.filter((a) => a.status == 1).length} 개 정답
+	</div>
+  {/if}
+
+  {#each results as res}
+  	<div class={["single-res", res.status != 1 && "incorrect"]}>
+		{res.book} {res.chapter} : {res.verses} ({Math.floor((stringToNumberArray(res.verses).length-1)/5) + 1} 점)<br>
+  		<DiffList diffs={res.diffs}/>
+	</div>
+  {/each}
+  </div>
 </div>
 
 <style>
@@ -118,5 +154,29 @@
 
   .button-input.submit {
     width: 320px;
+  }
+
+  .res-container {
+  	text-align: left;
+  }
+
+  .res-counter {
+  	text-size: 2em;
+	font-weight: bold;
+	margin: 0 20px;
+	color: var(--white-1);
+  }
+
+  .single-res {
+  	color: var(--white-1);
+
+	padding: 5px 10px;
+	margin: 5px 10px;
+
+	border-radius: 5px;
+  }
+
+  .single-res.incorrect {
+  	background-color: #ff000022;
   }
 </style>

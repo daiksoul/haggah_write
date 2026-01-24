@@ -1,17 +1,19 @@
 import readXlsxFile from 'read-excel-file/node';
 
 export const actions = {
-				submit: async ({request, locals: { supabase, user } }) => {
-								const data = await request.formData();
-								
-								let file = data.get('file')?.valueOf() as File | string;
+	submit: async ({request, locals: { supabase, user } }) => {
+		const data = await request.formData();
 
-								if (file instanceof File) {
-												let rows = await readXlsxFile(Buffer.from( await file.arrayBuffer()));
+		let file = data.get('file')?.valueOf() as File | string;
 
-												for (let row of rows) {
+		if (file instanceof File) {
+			let rows = await readXlsxFile(Buffer.from( await file.arrayBuffer()));
+
+			for (let row of rows) {
+
+			
 																
-												}
-								}
-				}
+			}
+		}
+	}
 }
