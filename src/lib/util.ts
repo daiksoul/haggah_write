@@ -51,13 +51,13 @@ export function stringToNumberArray(input: string): number[] {
   let indices = input.split(",");
 
   for (let idx of indices) {
-    console.log(idx);
+    //console.log(idx);
     if (idx.includes("-")) {
 
       let [one, two] = idx.split("-");
 
-      console.log(one);
-      console.log(two);
+      //console.log(one);
+      //console.log(two);
 
       for (let i = parseInt(one); i <= parseInt(two); i++) {
         toReturn.push(i);

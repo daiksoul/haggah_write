@@ -3,51 +3,65 @@
   import readXlsxFile from "read-excel-file";
   import { type ChangeObject } from "diff";
   import DiffList from "$lib/component/diff_list.svelte";
-  import { stringToNumberArray } from '$lib/util.js';
+  import { stringToNumberArray } from "$lib/util.js";
 
   let files: FileList | null = $state(null);
   let fileInput: HTMLFormElement | null = $state(null);
 
-  let results: { idx: number, book: string, chapter: string, verses: string, diffs: ChangeObject[] , status: number }[] = $state([]);
+  let correctScore: number = $state(0);
+
+  let results: {
+    idx: number;
+    book: string;
+    chapter: string;
+    verses: string;
+    diffs: ChangeObject<string>[];
+    status: number;
+  }[] = $state([]);
 
   async function submit() {
-	if(files == null) return;
-	results = [];
+    if (files == null) return;
+    results = [];
 
-  	let rows = await readXlsxFile(files.item(0));
+    let rows = await readXlsxFile(files.item(0)!);
 
-	for (let [idx, row] of rows.entries()) {
-		let book = row.at(0)?.toString() ?? '';
-		let chapter = row.at(1)?.toString() ?? '';
-		let verses = row.at(2)?.toString() ?? '';
-		let content = row.at(3)?.toString() ?? '';
-	
-		fetch("grader/API", {
-			method: "POST",
-			body: JSON.stringify(
-				{book , chapter , verses , content}
-			),
-			headers: {
-				"Content-Type": "application/json",
-			}
-		}).then( async (response) => {
-			console.log(response);
+    for (let [idx, row] of rows.entries()) {
+      let book = row.at(0)?.toString() ?? "";
+      let chapter = row.at(1)?.toString() ?? "";
+      let verses = row.at(2)?.toString() ?? "";
+      let content = row.at(3)?.toString() ?? "";
 
+      fetch("grader/API", {
+        method: "POST",
+        body: JSON.stringify({ book, chapter, verses, content }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).then(async (response) => {
+        console.log(response);
 
-			let { data: diffs, stat: status } = await response.json();
+        let { data: diffs, stat: status } = await response.json();
 
-			results.push({
-				idx,
-				book,
-				chapter,
-				verses,
-				diffs,
-				status,
-			});
+        results.push({
+          idx,
+          book,
+          chapter,
+          verses,
+          diffs,
+          status,
+        });
 
-			results.sort(( a, b ) => a.idx - b.idx)
-		});
-	}
+        results.sort((a, b) => a.idx - b.idx);
+
+        correctScore = 0;
+        results
+          .filter((a) => a.status == 1)
+          .forEach((a: { verses: string }) => {
+            correctScore +=
+              Math.floor((stringToNumberArray(a.verses).length - 1) / 5) + 1;
+          });
+      });
+    }
   }
 
   function onFileSubmit() {}
@@ -84,24 +98,51 @@
       onclick={() => {
         //fileInput?.requestSubmit();
 
-	submit();
+        submit();
       }}>제출</button
     >
   </form>
 
   <div class="res-container">
-  {#if results.length > 0}
-  <div class="res-counter">
-  	{results.length} 묶음 중 {results.filter((a) => a.status == 1).length} 개 정답
-	</div>
-  {/if}
+    {#if results.length > 0}
+      <div class="res-counter">
+        {results.length} 묶음 중 {results.filter((a) => a.status == 1).length} 개
+        정답
+      </div>
 
-  {#each results as res}
-  	<div class={["single-res", res.status != 1 && "incorrect"]}>
-		{res.book} {res.chapter} : {res.verses} ({Math.floor((stringToNumberArray(res.verses).length-1)/5) + 1} 점)<br>
-  		<DiffList diffs={res.diffs}/>
-	</div>
-  {/each}
+      <div class="res-rows">
+        <div class="res-column">
+          오답
+          {#each results.filter((a) => a.status != 1) as res}
+            <div class="single-res incorrect">
+              <b
+                >{res.book}
+                {res.chapter} : {res.verses} ({Math.floor(
+                  (stringToNumberArray(res.verses).length - 1) / 5,
+                ) + 1} 점)</b
+              >
+              <br />
+              <DiffList diffs={res.diffs} />
+            </div>
+          {/each}
+        </div>
+        <div class="res-column">
+          정답 ({correctScore}점)
+          {#each results.filter((a) => a.status == 1) as res}
+            <div class="single-res">
+              <b
+                >{res.book}
+                {res.chapter} : {res.verses} ({Math.floor(
+                  (stringToNumberArray(res.verses).length - 1) / 5,
+                ) + 1} 점)</b
+              >
+              <br />
+              <DiffList diffs={res.diffs} />
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
   </div>
 </div>
 
@@ -157,26 +198,41 @@
   }
 
   .res-container {
-  	text-align: left;
+    text-align: left;
+    color: var(--white-1);
   }
 
   .res-counter {
-  	text-size: 2em;
-	font-weight: bold;
-	margin: 0 20px;
-	color: var(--white-1);
+    text-size: 2em;
+    font-weight: bold;
+    margin: 0 20px;
+    color: var(--white-1);
   }
 
   .single-res {
-  	color: var(--white-1);
+    color: var(--white-1);
 
-	padding: 5px 10px;
-	margin: 5px 10px;
+    padding: 5px 10px;
+    margin: 5px 10px;
 
-	border-radius: 5px;
+    border-radius: 5px;
   }
 
   .single-res.incorrect {
-  	background-color: #ff000022;
+    background-color: #ff000022;
+  }
+
+  .res-rows {
+    margin: 10px 20px;
+  }
+
+  .res-rows > * {
+    display: inline-block;
+  }
+
+  .res-rows .res-column {
+    width: 40%;
+    min-width: 400px;
+    vertical-align: top;
   }
 </style>
