@@ -1,6 +1,7 @@
 import { fullNames, shortNames } from "$lib/data.js";
 import { evaluation } from "$lib/model/submit_n_draft.js";
 import { rawGrade } from "$lib/server/grading.js";
+import { correctifyAddress } from "$lib/util.js";
 import { error, json } from "@sveltejs/kit";
 import type { ChangeObject } from "diff";
 // error code 
@@ -25,6 +26,8 @@ export async function POST({ request, locals: { supabase, user, examData } }) {
     return error(460, { message: "잘못된 주소 형식입니다." });
   }
 
+  let { verses: correctVerses } = correctifyAddress(parsedMVerse?.book ?? 0 + 1, parsedMVerse?.chapter ?? 1, parsedMVerse?.verses ?? []);
+
   /// get multiverse text content from multiverse_id
   let { data: mVData, error: mVError } = examData.showAddress ? await supabase.rpc('get_multiverse_content_by_mid', {
     cid_input: examData.collectionId,
@@ -33,7 +36,7 @@ export async function POST({ request, locals: { supabase, user, examData } }) {
     cid_input: examData.collectionId,
     book_input: parsedMVerse?.book,
     chapter_input: parsedMVerse?.chapter,
-    verses_input: parsedMVerse?.verses
+    verses_input: correctVerses,
   });
 
   if (mVError) {
