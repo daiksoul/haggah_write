@@ -166,5 +166,72 @@
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>
+	<!--	<div id="stuff">
+			<ul id="console-output"></ul>
+	</div> -->
 	</body>
+	<!--
+Source - https://stackoverflow.com/a/73668597
+Posted by jsejcksn
+Retrieved 2026-04-14, License - CC BY-SA 4.0
+-->
+
+<!-- This list element will be used to display the console messages -->
+
+<!-- Style however you want -->
+<style>
+	#stuff {
+		display: block;
+		position: absolute;
+		height: 50%;
+		bottom: 0px;
+		z-index: 100;
+		overflow: scroll;
+	}
+  #console-output { list-style: none; color: white; }
+  .console-message { border-top: 1px solid; }
+</style>
+
+<script type="module">
+  // The list element used to display your messages:
+  const list = document.getElementById('console-output');
+
+  // A function to append new values to the element:
+  function print (...values) {
+    const listItem = document.createElement('li');
+    listItem.classList.add('console-message');
+    for (const value of values) {
+      const pre = document.createElement('pre');
+      const code = document.createElement('code');
+      code.textContent = JSON.stringify(value, null, 2);
+      pre.appendChild(code);
+      listItem.appendChild(pre);
+    }
+    list.appendChild(listItem);
+  }
+
+  // Create a reference to the original console.log method:
+  const originalLogMethod = console.log.bind(console);
+	const originalErrorMethod = console.error.bind(console);
+	//const originalInfoMethod = console.info.bind(console);
+
+  // Overwrite it with a custom fn that also invokes the `print` fn above:
+  //console.log = (...values) => {
+  //  originalLogMethod(...values);
+  //  print(...values);
+  //};
+
+	//console.error = (...values) => {
+	//	originalErrorMethod(...values);
+	//	print(...values);
+	//}
+
+//	console.info = (..values) =>{
+//		originalInfoMethod(...values);
+//		print(...values);
+//	}
+
+  // Then just use `console.log` normally in your code:
+	//console.error("This is an error message")
+</script>
 </html>

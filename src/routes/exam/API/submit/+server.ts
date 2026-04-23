@@ -102,7 +102,7 @@ export async function POST({ request, locals: { supabase, user, examData } }) {
   }
 
 
-  let { data: submitData, error: submitError } = id == -1
+  let { data: submitData, error: submitError } = id <= -1
     ? await supabase.from("submitNdraft").insert({
       multiverse_id: mid,
       eval: evalu,

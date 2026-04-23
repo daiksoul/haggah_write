@@ -3,7 +3,7 @@ import { error, json } from '@sveltejs/kit';
 export async function POST({ request, locals: { supabase, user } }) {
   let _json = await request.json();
 
-  if (_json.draft.id == -1) {
+  if (_json.draft.id < 0) {
     let { id, owner_uid, ...tmp } = _json.draft;
 
     let { data, error: insertError } = await supabase.from("submitNdraft")

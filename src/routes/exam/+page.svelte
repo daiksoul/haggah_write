@@ -50,6 +50,19 @@
     chapter: number;
     verses: number[];
   }
+
+	interface SNDMeta {
+		/// timer for debouncing
+		timer: number;
+		/// submission state of snds
+		/// 0 -> not submitted
+		/// 1 -> in submission
+		/// 2 -> submitted
+		status: number;
+		sndId: number | null;
+		mid: number | null;
+	}
+
   /// list of mulitiverses
   let dataList: MultiVerse[] | null = $state<MultiVerse[] | null>(null);
   /// list of multiverse id s
@@ -58,8 +71,8 @@
   );
   /// selected multiverse id
   let selectedId = $state<number>(0);
-  /// timer
-  let dataTimerList: number[] = $state<number[]>([]);
+	/// timer and status
+	let SNDMetaList: SNDMeta[] = $state<SNDMeta[]>([]);
 
   /// async function wating on data
   data.data.then(({ data: d, error }) => {
@@ -72,9 +85,10 @@
           verses: v.verses,
         };
       });
-      dataTimerList = d.map((_) => -1);
-      submitted_arr.clear();
-      d.forEach((_) => submitted_arr.push(0));
+      //submitted_arr.clear();
+      //d.forEach((_) => submitted_arr.push(0));
+			SNDMetaList.clear()
+			//d.forEach((v) => SNDMetaList.push({timer: -1, status: 0, sndId: null, mid: null}))
       selectedId = dataList.at(0)?.id ?? -1;
       loadInputs();
     }
@@ -91,7 +105,6 @@
 
   let sNDList = $state<SubmitNDraft[]>([]);
   let sNDIdList: number[] | null = $derived(sNDList.map((v) => v.id));
-  let sNDTimerList: number[] = $state([]);
   let selectedSNDId = $state<number | null>(null);
   let selectedSND = $derived<SubmitNDraft | null>(
     sNDList === null
@@ -103,26 +116,27 @@
           : sNDList.filter((v: SubmitNDraft) => v.id === selectedSNDId)[0],
   );
 
-  /// submission state of snds
-  /// 0 -> not submitted
-  /// 1 -> in submission
-  /// 2 -> submitted
-  let submitted_arr = $state<number[]>([]);
-
   data.submitNdraft.then(({ data: d, error }) => {
     if (!error) {
       sNDList?.push(...(d ?? []));
-      for (const _ of sNDList!) {
-        sNDTimerList.push(-1);
-      }
+      for (let t of sNDList) {
+				if (t.eval == 1 || t.eval == 2) {
+					SNDMetaList.push({timer:-1, status: 2, sndId: t.id, mid: t.multiverse_id})
+				} else {
+					SNDMetaList.push({timer:-1, status: 0, sndId: t.id, mid: t.multiverse_id})
+				}
+			}
+
       if (sNDIdList.length > 0) {
         selectedSNDId = sNDIdList[0];
         loadInputs();
       }
 
       if (!examData.showAddress) {
-        submitted_arr.clear();
-        d?.forEach((_) => submitted_arr.push(0));
+        //submitted_arr.clear();
+        //d?.forEach((_) => submitted_arr.push(0));
+				SNDMetaList.clear()
+				//d?.forEach((v) => SNDMetaList.push({timer: -1, status: 0, sndId: null}))
       }
     }
   });
@@ -156,40 +170,39 @@
         res: [],
       };
       sNDList?.push(tmpSND);
-      sNDTimerList.push(-1);
-      submitted_arr.push(0);
+			let tmpSNDMeta = {
+				timer: -1,
+				status: 0,
+				sndId: tmpIdCounter,
+				mid: tmpSND.multiverse_id
+			}
+			SNDMetaList.push(tmpSNDMeta)
 
       selectedSNDId = tmpIdCounter;
       tmpIdCounter--;
 
-      let tmpIdx = examData?.showAddress
-        ? (idList?.indexOf(selectedId) ?? -1)
-        : sNDTimerList.length - 1;
-
       if (submit) {
-        debounceSubmit(tmpIdx, tmpSND);
+        debounceSubmit(tmpSND);
       } else {
-        debounceDraft(tmpIdx, tmpSND);
+        debounceDraft(tmpSND);
       }
     } else {
-      console.log(selectedSND);
+      //console.log(selectedSND);
 
-      if (selectedSND?.content == text && selectedSND?.address == address_text)
+			let mIdx = SNDMetaList.findIndex((v) => v.sndId == selectedSNDId);
+      
+			if (selectedSND?.content == text && selectedSND?.address == address_text)
         return;
 
       selectedSND!.address = address_text;
       selectedSND!.content = text;
       selectedSND!.updated_at = new Date(Date.now());
 
-      let tmpIdx = examData?.showAddress
-        ? (idList?.indexOf(selectedId) ?? -1)
-        : sNDIdList?.indexOf(selectedSNDId!);
-
       if (submit) {
-        debounceSubmit(tmpIdx!, selectedSND!);
+        debounceSubmit(selectedSND!);
       } else {
-        if (submitted_arr[tmpIdx!] == 1) return;
-        debounceDraft(tmpIdx!, selectedSND!);
+    		if (SNDMetaList[mIdx].status == 1) return;
+				debounceDraft(selectedSND!);
       }
     }
   }
@@ -206,17 +219,13 @@
     diffs.push(...(selectedSND?.res ?? []));
   }
 
-  function debounceDraft(idx: number, draft: SubmitNDraft) {
+  function debounceDraft(draft: SubmitNDraft) {
+		let idx = SNDMetaList.findIndex((v) => v.sndId == draft.id);
     clearTimeout(
-      examData?.showAddress ? dataTimerList[idx] : sNDTimerList[idx],
+      SNDMetaList[idx].timer,
     );
 
-    let sndIdx = idx;
-    if (examData?.showAddress) {
-      sndIdx =
-        sNDList.findIndex((v) => v.multiverse_id == dataList?.at(idx)?.id) ??
-        -1;
-    }
+    let sndIdx = sNDList.findIndex((v) => v.id == draft.id)
 
     let tmpId = window.setTimeout(async () => {
       let response = await fetch("/exam/API/draft", {
@@ -233,39 +242,29 @@
       }
 
       const { id } = await response.json();
+			console.log("this is the id" + id)
 
       if (sNDList != null && sNDList[sndIdx].id < 0) {
         sNDList[sndIdx].id = id;
-        //selectedSNDId = id;
-        //loadInputs();
+				SNDMetaList[idx].sndId = id;
       }
 
-      if (examData?.showAddress) {
-        dataTimerList[idx] = -1;
-      } else {
-        sNDTimerList[idx] = -1;
-      }
+			SNDMetaList[idx].timer = -1;
     }, 500);
 
-    if (examData?.showAddress) {
-      dataTimerList[idx] = tmpId;
-    } else {
-      sNDTimerList[idx] = tmpId;
-    }
+		SNDMetaList[idx].timer = tmpId;
   }
 
-  function debounceSubmit(idx: number, submission: SubmitNDraft) {
-    submitted_arr[idx] = 1;
+  function debounceSubmit(submission: SubmitNDraft) {
+    let idx = SNDMetaList.findIndex((v) => v.sndId == submission.id);
+		
+		SNDMetaList[idx].status = 1;
     clearTimeout(
-      examData?.showAddress ? dataTimerList[idx] : sNDTimerList[idx],
+      SNDMetaList[idx].timer,
     );
 
     let sndIdx = idx;
-    if (examData?.showAddress) {
-      sndIdx =
-        sNDList.findIndex((v) => v.multiverse_id == dataList?.at(idx)?.id) ??
-        -1;
-    }
+		sndIdx =  sNDList.findIndex((v) => v.id == submission.id) ?? -1;
 
     let tmpId = window.setTimeout(async () => {
       let response = await fetch("/exam/API/submit", {
@@ -285,11 +284,7 @@
 
       if (response.status > 399) {
         showToast(message, "error", true);
-        if (examData?.showAddress) {
-          dataTimerList[idx] = -1;
-        } else {
-          sNDTimerList[idx] = -1;
-        }
+				SNDMetaList[idx].timer = -1;
 
         if (response.status == 461) {
           completed = true;
@@ -310,17 +305,13 @@
       if (sNDList != null) {
         if (sNDList[sndIdx].id < 0) {
           sNDList[sndIdx].id = resultData.id;
+					SNDMetaList[idx].sndId = resultData.id;
         }
         if (selectedSNDId == null || selectedSNDId < 0) {
           selectedSNDId = resultData.id;
         }
 
-        // if (selectedSNDId == null) {
-        //   //sNDList[sndIdx].id = resultData.id;
-        //   selectedSNDId = resultData.id;
-        // }
-
-        console.log(resultData);
+        //console.log(resultData);
 
         sNDList[sndIdx].created_at = resultData.created_at;
         sNDList[sndIdx].updated_at = resultData.updated_at;
@@ -335,37 +326,38 @@
         completed = true;
       }
 
-      if (examData?.showAddress) {
-        dataTimerList[idx] = -1;
-      } else {
-        sNDTimerList[idx] = -1;
-      }
+			SNDMetaList[idx].timer = -1;
 
-      submitted_arr[idx] = 2;
+			SNDMetaList[idx].status = 2;
     }, 500);
 
-    if (examData?.showAddress) {
-      dataTimerList[idx] = tmpId;
-    } else {
-      sNDTimerList[idx] = tmpId;
-    }
+		SNDMetaList[idx].timer = tmpId;
   }
 
-  function debounceDelete(idx: number, submission: SubmitNDraft) {
-    if (submitted_arr[idx] == 1) {
-      showToast("제출 중인 구절입니다", "error", true);
+  function debounceDelete(submission: SubmitNDraft) {
+    let idx = SNDMetaList.findIndex((v) => v.sndId == submission.id);
+
+    if (idx != -1 && SNDMetaList[idx].status == 1) {
+			showToast("제출 중인 구절입니다", "error", true);
       return;
     }
-    clearTimeout(
-      examData?.showAddress ? dataTimerList[idx] : sNDTimerList[idx],
-    );
-    let sndIdx = idx;
-    if (examData?.showAddress) {
-      sndIdx =
-        sNDList.findIndex((v) => v.multiverse_id == dataList?.at(idx)?.id) ??
-        -1;
-    }
-    let tmpId = window.setTimeout(async () => {
+
+		if (idx != -1) {
+			clearTimeout(
+				 SNDMetaList[idx].timer,
+			);
+		} else {
+			SNDMetaList.push({
+				timer: -1,
+				status: 0,
+				sndId: submission.id,
+				mid: submission.multiverse_id
+			});
+			idx = SNDMetaList.length - 1;
+		}
+    let sndIdx = sNDList.findIndex((v) => v.id == submission.id);
+    
+		let tmpId = window.setTimeout(async () => {
       let response = await fetch("/exam/API/delete", {
         method: "POST",
         body: JSON.stringify({ idx: idx, id: submission.id }),
@@ -380,7 +372,7 @@
         return;
       }
 
-      if (selectedSNDId == sNDIdList?.at(idx) && sNDIdList != null) {
+      if (selectedSNDId == submission.id && sNDIdList != null) {
         if (sNDIdList?.length > 1) {
           let tmpIdx = Math.min(idx + 1, sNDIdList?.length - 2);
           selectedSNDId = sNDIdList[tmpIdx];
@@ -389,16 +381,12 @@
         }
       }
       loadInputs();
-
-      sNDList.removeAt(idx);
-      sNDTimerList.removeAt(idx);
+			
+      sNDList.removeAt(sndIdx);
+			SNDMetaList.removeAt(idx);
     }, 500);
 
-    if (examData?.showAddress) {
-      dataTimerList[idx] = tmpId;
-    } else {
-      sNDTimerList[idx] = tmpId;
-    }
+		SNDMetaList[idx].timer = tmpId;
   }
 
   onMount(() => {
@@ -533,6 +521,7 @@
     <button
       onclick={(_) => {
         //console.log(`${res.length}`);
+				console.log(sNDList);
         saveDraft(true);
       }}
       tabindex="0"
@@ -606,75 +595,72 @@
   <div class="sidebar">
     {#if examData?.showAddress}
       {#await data.data then { data: verses, error }}
-        {#each verses as mVerse, i}
-          <button
-            class={["address-button", selectedId == mVerse.id && "selected"]}
-            onclick={() => {
-              //console.log(selectedSND);
-              saveDraft();
-              cleanInputs();
-              selectedId = mVerse.id;
-              selectedSNDId =
-                sNDList.find((e) => e.multiverse_id == mVerse.id)?.id ?? null;
-              loadInputs();
-            }}
-          >
-            {#if dataTimerList[i] == -1}
-              <span
-                class={[
-                  "address-indicator",
-                  evalToAttr(
-                    sNDList.find((e) => e.multiverse_id == mVerse.id) ?? null,
-                  ),
-                ]}>•</span
-              >
-            {:else}
-              <span class="address-loading-indicator">
-                <CircularLoadingIndicator
-                  width="7px"
-                  height="7px"
-                  --loading-indicator-border-width="2px"
-                />
-              </span>
+			{#each verses.map((v) => [v, SNDMetaList.find((t) => t.mid == v.id), sNDList.find((t) => t.multiverse_id == v.id)]) as [mVerse, meta, snd], i}
+				<button
+					class={["address-button", selectedId == mVerse.id && "selected"]}
+					onclick={() => {
+						saveDraft();
+						cleanInputs();
+						selectedId = mVerse.id;
+						selectedSNDId =
+							sNDList.find((e) => e.multiverse_id == mVerse.id)?.id ?? null;
+						loadInputs();
+					}}
+				>
+					{#if !snd }
+						<span class={["address-indicator","unevaluated"]}>•</span>
+					{:else if meta != undefined && meta.timer != -1 }
+						<span class="address-loading-indicator">
+							<CircularLoadingIndicator
+								width="7px"
+								height="7px"
+								--loading-indicator-border-width="2px"
+							/>
+						</span>
+					{:else}
+						<span
+							class={[
+								"address-indicator",
+								evalToAttr(snd),
+							]}>•</span
+						>
+					{/if}
+					{multiverseShortName(mVerse)} {meta?.timer}
+				</button>
+			{/each}
+		{/await}
+	{:else}
+		{#each sNDList.map((v) => [v, SNDMetaList.find((t) => t.sndId == v.id)]) as [draft, meta] , i (draft.id)}
+			<div class="address-row">
+				<button
+					class={["address-button", selectedSNDId == draft.id && "selected"]}
+					onclick={() => {
+						saveDraft();
+						cleanInputs();
+						selectedSNDId = draft.id;
+						loadInputs();
+					}}
+				>
+					{#if meta != undefined && meta.timer != -1}
+					         <span class="address-loading-indicator">
+					           <CircularLoadingIndicator
+					             width="7px"
+					             height="7px"
+					             --loading-indicator-border-width="2px"
+					           />
+					         </span>
+					       {:else}
+							<span class={["address-indicator", evalToAttr(draft)]}>
+                •</span>
             {/if}
-            {multiverseShortName(mVerse)}
-          </button>
-        {/each}
-      {/await}
-    {:else}
-      {#each sNDList as draft, i}
-        <div class="address-row">
-          <button
-            class={["address-button", selectedSNDId == draft.id && "selected"]}
-            onclick={() => {
-              saveDraft();
-              cleanInputs();
-              selectedSNDId = draft.id;
-              loadInputs();
-            }}
-          >
-            {#if sNDTimerList[i] == -1}<span
-                class={["address-indicator", evalToAttr(draft)]}
-              >
-                •</span
-              >
-            {:else}
-              <span class="address-loading-indicator">
-                <CircularLoadingIndicator
-                  width="7px"
-                  height="7px"
-                  --loading-indicator-border-width="2px"
-                />
-              </span>
-            {/if}
-            {draft.address}
+            {draft.address} {draft.id}
           </button>
           <div class="draft-util">
             {#if draft.eval == 0}
               <button
                 class="remove-draft-button"
                 onclick={(_) => {
-                  debounceDelete(i, draft);
+                  debounceDelete(draft);
                 }}
               >
                 <Remove width="12px" height="12px" color="var(--white-1)" />
@@ -688,6 +674,7 @@
         onclick={(_) => {
           saveDraft();
           cleanInputs();
+					console.log(selectedSNDId);
           selectedSNDId = null;
         }}
       >
@@ -911,7 +898,8 @@
     margin: 0;
   }
 
-  .sidebar-hover:hover .draft-util {
+  /* .sidebar-hover:hover .draft-util { */
+	.sidebar-hover .draft-util {
     right: 15px;
   }
 
@@ -925,11 +913,13 @@
     transition: all 500ms;
   }
 
-  .sidebar-hover:hover {
+  /* .sidebar-hover:hover { */
+	.sidebar-hover {
     width: 25%;
   }
 
-  .sidebar-hover:hover .sidebar {
+  /* .sidebar-hover:hover .sidebar { */
+	.sidebar-hover .sidebar {
     width: 100%;
   }
 
